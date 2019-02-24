@@ -7,7 +7,7 @@ function exception_error_handler($errno, $errstr, $errfile, $errline ) {
 set_error_handler("exception_error_handler");
 
 // Ensure home directory
-$config_dir = $_SERVER['HOME']."/.config/oikopupu/";
+$config_dir = $_SERVER['HOME']."/.config/instanssiradio/";
 if (!is_dir($config_dir)) {
     mkdir($config_dir, 0700, TRUE);
 }

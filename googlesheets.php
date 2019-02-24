@@ -8,8 +8,8 @@ function getGoogleClient($headless = TRUE)
 {
     global $config_dir;
     $client = new Google_Client();
-    $client->setApplicationName('Oikopupu');
-    $client->setScopes(Google_Service_Sheets::SPREADSHEETS_READONLY);
+    $client->setApplicationName('Instanssiradio');
+    $client->setScopes(Google_Service_Sheets::SPREADSHEETS);
     $client->setAuthConfig($config_dir.'credentials.json');
     $client->setAccessType('offline');
 
