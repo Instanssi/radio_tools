@@ -1,0 +1,48 @@
+#!/usr/bin/env php
+<?php
+require_once __DIR__ . '/common.php';
+require_once __DIR__ . '/vendor/autoload.php';
+require_once __DIR__ . '/googlesheets.php';
+
+$sheet = '1pRBIrNYjw5Qp1B8DyiyeKhFPFZB0hS_L94d4pa6V6YU';
+
+// Get the API client and construct the service object.
+$client = getGoogleClient();
+$service = new Google_Service_Sheets($client);
+
+$insert = [
+    'insertDimension' => [
+        'range' => [
+            'sheetId'    => 0,
+            'dimension'  => "ROWS",
+            'startIndex' => 1,
+            'endIndex'   => 2
+        ]
+    ]
+];
+
+$batch = new Google_Service_Sheets_BatchUpdateSpreadsheetRequest(['requests' => $insert]);
+$response = $service->spreadsheets->batchUpdate($sheet, $batch);
+
+$sheet_id = $sheet;
+$range = "Musiikki!A2";
+
+$updateBody = new Google_Service_Sheets_ValueRange([
+    'range' => $range,
+    'majorDimension' => 'ROWS',
+    'values' => [
+        [
+            25569+(time()/86400),
+            $argv[1],
+            $argv[2],
+            $argv[3],
+        ]
+    ]
+]);
+$service->spreadsheets_values->update(
+    $sheet_id,
+    $range,
+    $updateBody,
+    ['valueInputOption' => "RAW"]
+);
+
