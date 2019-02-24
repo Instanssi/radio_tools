@@ -2,7 +2,8 @@
 #
 # Quick & Dirty hack to get real time playlist status
 
-while sleep 1; do
+while true; do
 	mpc | head -n 2 | tr '\n' ' '
 	echo
+	sleep 1
 done
