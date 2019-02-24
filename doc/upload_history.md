@@ -38,5 +38,5 @@ the command line.
 ## Run
 
 ```sh
-./upload_history PROGRAMME ARTIST TITLE
+./upload_history JSON_DATA
 ```

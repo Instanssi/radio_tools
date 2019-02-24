@@ -6,6 +6,8 @@ require_once __DIR__ . '/googlesheets.php';
 
 $sheet = '1pRBIrNYjw5Qp1B8DyiyeKhFPFZB0hS_L94d4pa6V6YU';
 
+$data = json_decode($argv[1]);
+
 // Get the API client and construct the service object.
 $client = getGoogleClient();
 $service = new Google_Service_Sheets($client);
@@ -32,10 +34,10 @@ $updateBody = new Google_Service_Sheets_ValueRange([
     'majorDimension' => 'ROWS',
     'values' => [
         [
-            25569+(time()/86400),
-            $argv[1],
-            $argv[2],
-            $argv[3],
+            25569+(($data->time ?? time())/86400),
+            $data->show ?? '',
+            $data->artist,
+            $data->title,
         ]
     ]
 ]);
