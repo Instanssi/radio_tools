@@ -28,7 +28,7 @@ instructions at
 Then and give credentials file as an argument to login script:
 
 ```sh
-./login /path/to/credentials.json
+./google_api_login /path/to/credentials.json
 ```
 
 Follow script's instructions. You need to allow the access by opening
