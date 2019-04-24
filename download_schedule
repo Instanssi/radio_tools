@@ -1,0 +1,45 @@
+#!/usr/bin/env php
+<?php
+require_once __DIR__ . '/common.php';
+require_once __DIR__ . '/vendor/autoload.php';
+require_once __DIR__ . '/googlesheets.php';
+require_once __DIR__ . '/lib/db.php';
+
+$sheet = '1rj64ob2gsXxpRTUFsMa6JFzcweKWUJ7Cd_X1kYY9dq4';
+$zone = new DateTimeZone("Europe/Helsinki");
+
+// Get the API client and construct the service object.
+$client = getGoogleClient();
+$service = new Google_Service_Sheets($client);
+
+$range = 'Ohjelmakartta!A1:E';
+$response = $service->spreadsheets_values->get($sheet, $range);
+$values = $response->getValues();
+
+if (empty($values)) {
+    throw new Exception("No data found");
+}
+
+// Start processing file
+$header = array_shift($values);
+
+$schedule_stmt = $db->prepare('INSERT INTO schedule (ts, name, link) VALUES(?, ?, ?)');
+$db->exec('BEGIN');
+$db->exec('DELETE FROM schedule');
+
+foreach($values as &$row) {
+    $assoc_in = array_combine($header, array_pad($row, count($header), ''));
+    $out = [];
+
+    $datestr = $assoc_in['Päivä'].' '.$assoc_in['Kello'];
+    $date = DateTime::createFromFormat('d.m.Y G:i', $datestr, $zone);
+    $ts = $date->getTimestamp();
+
+    db_execute($schedule_stmt, [
+        $ts,
+        $assoc_in['Ohjelman nimi'],
+        $assoc_in['Linkki ohjelman kuvaukseen']
+    ]);
+}
+
+$db->exec('END');
