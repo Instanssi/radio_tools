@@ -13,12 +13,15 @@ arch_start=$(date +%s -d "`basename $arch_file .opus`")
 cut_start=$(( `date +%s -d "$1"` - $arch_start))
 cut_end=$(( `date +%s -d "$2"` - $arch_start))
 
+# Generate safe filename based on the track name
+outfile="`date -d "$1" '+%FT%R'`-`echo "$3" | iconv -f utf-8 -t ascii//TRANSLIT | tr '[:upper:]' '[:lower:]' |sed -sr -e 's/[^a-z0-9]+/-/g' -e 's/^-*//' -e 's/-*$//'`.opus"
+
 echo "From:         `date -d "$1"`"
 echo "To:           `date -d "$2"`"
 echo "Source file:  $arch_file"
 echo "Cut start:    $cut_start seconds"
 echo "Cut end:      $cut_end seconds"
-echo "Target file:  $3"
+echo "Title:        $3"
+echo "Target file:  $outfile"
 echo
-nice ffmpeg -i "$archive/$arch_file" -ss $cut_start -to $cut_end -c copy "$3"
-
+nice ffmpeg -i "$archive/$arch_file" -ss $cut_start -to $cut_end -c copy -metadata title="$3" -metadata artist='Vappuradio JKL 2019' "file:$outfile"
