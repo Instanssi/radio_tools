@@ -1,0 +1,18 @@
+#!/bin/sh -eu
+#
+# Outputs tab separated table in format: start end name
+# Produces cut points for archive_extractor script.
+
+journalctl --user -u radiotext --since=2019-04-24 -o json |
+    jq -Rr 'fromjson? | .MESSAGE |= fromjson | [.__REALTIME_TIMESTAMP | tonumber / 1e6 | floor] + if .MESSAGE.artist=="" and .MESSAGE.title != "" and .MESSAGE.show == null then [.MESSAGE.title] else [] end | @tsv' | {
+    ts_start=
+    name=
+    while IFS='	' read ts_end_raw name_new; do
+	ts_end=`date -Isec -d @$ts_end_raw`
+	if test "$name"; then
+	    echo "$ts_start\t$ts_end\t$name"
+	fi
+	ts_start=$ts_end
+	name="$name_new"
+    done
+}
