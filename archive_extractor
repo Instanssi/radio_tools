@@ -1,0 +1,24 @@
+#!/bin/sh -eu
+
+ref_date="`date -Is -d "$1"`"
+archive=~/archive/
+
+arch_file=`{
+    ls -U $archive
+    echo $ref_date
+} | sort | grep -B 1 -x -- "$ref_date" | head -n 1`
+
+arch_start=$(date +%s -d "`basename $arch_file .opus`")
+
+cut_start=$(( `date +%s -d "$1"` - $arch_start))
+cut_end=$(( `date +%s -d "$2"` - $arch_start))
+
+echo "From:         `date -d "$1"`"
+echo "To:           `date -d "$2"`"
+echo "Source file:  $arch_file"
+echo "Cut start:    $cut_start seconds"
+echo "Cut end:      $cut_end seconds"
+echo "Target file:  $3"
+echo
+nice ffmpeg -i "$archive/$arch_file" -ss $cut_start -to $cut_end -c copy "$3"
+
