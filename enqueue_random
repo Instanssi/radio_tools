@@ -1,0 +1,33 @@
+#!/bin/sh -eu
+
+# Number of items to keep on the playlist. Fist playing, second
+# waiting, third for panic problems (rapid skip / unplayable track)
+queue_len=3
+
+enqueue () {
+    mpc listall | grep -f ~/.config/radio_tools/enqueue.txt | shuf -n 1 | mpc add
+}
+
+playlist_length () {
+    mpc playlist -f ''|wc -l
+}
+
+fill_queue () {
+    while test `playlist_length` -lt $queue_len; do
+	enqueue
+    done
+}
+
+# Sanity checks: Make sure consume is on and database is up-to-datae
+mpc update --wait
+mpc consume on
+
+fill_queue
+
+# Make sure it's playing
+mpc play
+
+while mpc current --wait; do
+    echo "-- track ended --"
+    fill_queue
+done
