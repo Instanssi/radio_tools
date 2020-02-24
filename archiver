@@ -1,0 +1,10 @@
+#!/bin/sh -eu
+
+scripts="$(readlink -f "`dirname $0`")"
+
+cd ~/instanssi-musiikki/uusinnat/
+
+stdbuf -oL "$scripts/archive_cut_points" -f -n 1 | while read -r start end desc; do
+    "$scripts/archive_extractor" "$start" "$end" "$desc"
+    rsync --exclude='/*/' -rv . jkl.hacklab.fi:
+done
