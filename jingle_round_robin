@@ -1,0 +1,56 @@
+#!/bin/sh -eu
+#
+# This script is run every 10 minutes
+
+musicdir=/home/broadcast/instanssi-musiikki
+jingles=/home/broadcast/jingles.txt
+ctrfile=/tmp/jingle-counter
+
+insert () {
+    mpc insert "jingles/$1"
+}
+
+parse_line () {
+    read -r type args || return 1
+    case $type in
+	audio)
+	    echo "Inserting $args"
+	    insert "$args"
+	    ;;
+	voice)
+	    echo "$args" | {
+		read -r lang msg
+		espeak-ng -w $musicdir/jingles/espeak.wav -v $lang -p 55 -s 200 "$msg"
+		echo "Inserting speech, lang: $lang, message: $msg"
+		insert espeak.wav
+	    }
+	    ;;
+	*)
+	    echo FATAL ERROR INVALID COMMAND $type
+	    ;;
+    esac
+}
+
+get_next () {
+    grep '^[^#]' $jingles | sed "$1q;d" | parse_line
+}
+
+# Remove previous jingle if any
+mpc playlist -f %file% | sed -n /^jingles/= | mpc del
+
+# Manual insertion
+if test $# -ge 1; then
+    echo "$@" | parse_line
+else
+    test -e "$ctrfile" && ctr=`cat $ctrfile` || ctr=1
+    get_next $ctr || {
+	ctr=1
+	get_next $ctr
+    }
+    echo $(( $ctr + 1 )) >$ctrfile
+fi
+
+# After insertion wait for jingle to play and then remove it
+#mpc current -f 'Playing %file%' --wait # Wait for the jingle
+#mpc current -f 'Removing jingle' --wait # Wait for jingle to end
+
