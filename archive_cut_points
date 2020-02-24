@@ -3,16 +3,33 @@
 # Outputs tab separated table in format: start end name
 # Produces cut points for archive_extractor script.
 
-journalctl --user -u radiotext --since=2019-04-24 -o json |
-    jq -Rr 'fromjson? | .MESSAGE |= fromjson | [.__REALTIME_TIMESTAMP | tonumber / 1e6 | floor] + if .MESSAGE.artist=="" and .MESSAGE.title != "" and .MESSAGE.show == null then [.MESSAGE.title] else [] end | @tsv' | {
+journalctl --user -t nowplaying --since=-2weeks -o json |
+    jq -Rr 'fromjson? | .MESSAGE |= fromjson | [(.__REALTIME_TIMESTAMP | tonumber / 1e6 | floor), .MESSAGE.show // "-", .MESSAGE.artist // "-", .MESSAGE.title // "-"] | @tsv' | {
     ts_start=
-    name=
-    while IFS='	' read ts_end_raw name_new; do
-	ts_end=`date -Isec -d @$ts_end_raw`
-	if test "$name"; then
-	    echo "$ts_start\t$ts_end\t$name"
+    title=
+    old_show=-
+    while IFS='	' read ts_end new_show new_artist new_title; do
+	#echo $ts_end
+	#echo $new_show
+	#echo $new_artist
+	#echo $new_title
+	#echo ---
+	if test "$title" -a '(' "$new_show" = - -o "$new_artist" = - ')'; then
+	    # End of previous show
+	    echo "`date -Isec -d @$ts_start`\t`date -Isec -d @$ts_end`\t$title"
+	    title=
 	fi
-	ts_start=$ts_end
-	name="$name_new"
+
+	if test "$new_show" != - -a '(' "$new_artist" = - -o "$old_show" = - ')'; then
+	    # Start of a new show
+	    ts_start=$ts_end
+	    if test -z "$new_artist"; then
+		title="$new_show"
+	    else
+		title="$new_show: $new_title"
+	    fi
+	fi
+
+	old_show="$new_show"
     done
 }
