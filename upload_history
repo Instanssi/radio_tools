@@ -37,8 +37,8 @@ $updateBody = new Google_Service_Sheets_ValueRange([
         [
             25569 + ($now->getTimestamp() + $now->getOffset()) / 86400,
             $data->show ?? '',
-            $data->artist,
-            $data->title,
+            $data->artist ?? '',
+            $data->title ?? '',
         ]
     ]
 ]);
