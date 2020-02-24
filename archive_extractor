@@ -2,6 +2,7 @@
 
 ref_date="`date -Is -d "$1"`"
 archive=~/archive/
+artist=${artist-Instanssiradio `date +%Y`}
 
 arch_file=`{
     ls -U $archive
@@ -24,4 +25,4 @@ echo "Cut end:      $cut_end seconds"
 echo "Title:        $3"
 echo "Target file:  $outfile"
 echo
-nice ffmpeg -i "$archive/$arch_file" -ss $cut_start -to $cut_end -c copy -metadata title="$3" -metadata artist='Vappuradio JKL 2019' "file:$outfile"
+nice ffmpeg -nostdin -i "$archive/$arch_file" -ss $cut_start -to $cut_end -c copy -metadata title="$3" -metadata "artist=$artist" "file:$outfile"

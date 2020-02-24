@@ -3,17 +3,12 @@
 # Outputs tab separated table in format: start end name
 # Produces cut points for archive_extractor script.
 
-journalctl --user -t nowplaying --since=-2weeks -o json |
-    jq -Rr 'fromjson? | .MESSAGE |= fromjson | [(.__REALTIME_TIMESTAMP | tonumber / 1e6 | floor), .MESSAGE.show // "-", .MESSAGE.artist // "-", .MESSAGE.title // "-"] | @tsv' | {
+stdbuf -oL journalctl --user -t nowplaying ${@---since=-2weeks} -o json |
+    jq --unbuffered -Rr 'fromjson? | .MESSAGE |= fromjson | [(.__REALTIME_TIMESTAMP | tonumber / 1e6 | floor), .MESSAGE.show // "-", .MESSAGE.artist // "-", .MESSAGE.title // "-"] | @tsv' | {
     ts_start=
     title=
     old_show=-
-    while IFS='	' read ts_end new_show new_artist new_title; do
-	#echo $ts_end
-	#echo $new_show
-	#echo $new_artist
-	#echo $new_title
-	#echo ---
+    while IFS='	' read -r ts_end new_show new_artist new_title; do
 	if test "$title" -a '(' "$new_show" = - -o "$new_artist" = - ')'; then
 	    # End of previous show
 	    echo "`date -Isec -d @$ts_start`\t`date -Isec -d @$ts_end`\t$title"
