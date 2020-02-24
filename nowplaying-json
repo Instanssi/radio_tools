@@ -2,4 +2,4 @@
 #
 # Show current song and print following songs when they change
 
-stdbuf -oL journalctl -fn 1 SYSLOG_IDENTIFIER=broadcast -o json | jq --unbuffered -c 'try (.MESSAGE | fromjson) catch empty + {start:(.__REALTIME_TIMESTAMP | tonumber / 1e6)}'
+stdbuf -oL journalctl -fn 1 -t nowplaying -o json | jq --unbuffered -c 'try (.MESSAGE | fromjson) catch empty + {start:(.__REALTIME_TIMESTAMP | tonumber / 1e6 | floor)}'
